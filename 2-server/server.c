@@ -34,10 +34,10 @@ int getSocket(const struct addrinfo* info) {
 int main(const int argc, const char* argv[]) {
   struct addrinfo hints, *result;
   memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
+  // hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE;
-  const int success = getaddrinfo(NULL, port, &hints, &result);
+  const int success = getaddrinfo("127.0.0.1", port, &hints, &result);
   if (success != 0) {
     fprintf(stderr, "Error: %s\n",gai_strerror(success));
     return 1; 
