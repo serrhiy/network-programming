@@ -26,8 +26,8 @@ int connectTo(struct addrinfo** pinfo) {
   return descriptor;
 }
 
-void* getAddress(struct sockaddr* sockaddr) {
-  if (sockaddr->sa_family == AF_INET) {
+void* getAddress(struct sockaddr_storage* sockaddr) {
+  if (sockaddr->ss_family == AF_INET) {
     const struct sockaddr_in* ipv4 = (struct sockaddr_in*)sockaddr;
     return (void*)&ipv4->sin_addr;
   }
@@ -36,7 +36,7 @@ void* getAddress(struct sockaddr* sockaddr) {
 }
 
 void printAddress(const struct addrinfo* info, const char* pattern) {
-  const void* address = getAddress(info->ai_addr);
+  const void* address = getAddress((struct sockaddr_storage*)info->ai_addr);
   char ip[INET6_ADDRSTRLEN];
   inet_ntop(info->ai_family, address, ip, INET6_ADDRSTRLEN);
   printf(pattern, ip);
