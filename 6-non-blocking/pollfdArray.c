@@ -3,19 +3,24 @@
 #include <poll.h>
 #include "pollfdArray.h"
 
+const int ARRAY_FIELDS = 3;
+
 pollfdArray* initpPollfdArray() {
   pollfdArray* array = malloc(sizeof(pollfdArray));
   if (array == NULL) return NULL;
+  array->start = malloc(sizeof(struct pollfd) * ARRAY_FIELDS);
+  if (array->start == NULL) {
+    free(array);
+    return NULL;
+  }
   array->length = 0;
-  array->start = NULL;
+  array->fields = ARRAY_FIELDS;
   return array;
 }
 
 int destroyPollfdArray(pollfdArray* array) {
   if (array == NULL) return 0;
-  const int length = array->length;
-  struct pollfd* start = array->start;
-  if (length > 0) free(start);
+  free(array->start);
   free(array);
   return 1;
 }
@@ -23,15 +28,22 @@ int destroyPollfdArray(pollfdArray* array) {
 int pushPollfd(pollfdArray* array, struct pollfd item) {
   if (array == NULL) return 0;
   const int length = array->length;
-  struct pollfd* pointer = malloc(sizeof(struct pollfd) * (length + 1));
-  if (pointer == NULL) return 0;
-  if (length > 0) {
-    memcpy(pointer, array->start, length * sizeof(struct pollfd*));
-    free(array->start);
+  const int fields = array->fields;
+  struct pollfd* start = array->start;
+  if (length < fields) {
+    array->length++;
+    start[length] = item;
+    return 1;
   }
+  const int newFields = fields + ARRAY_FIELDS;
+  struct pollfd* pointer = malloc(sizeof(struct pollfd) * newFields);
+  if (pointer == NULL) return 0;
+  memcpy(pointer, array->start, fields * sizeof(struct pollfd));
+  free(array->start);
   pointer[length] = item;
   array->start = pointer;
-  array->length += 1;
+  array->length++;
+  array->fields = newFields;
   return 1;
 }
 
@@ -46,16 +58,24 @@ int indexOfPollfd(const pollfdArray* array, const struct pollfd item) {
 int deletePollfd(pollfdArray* array, const struct pollfd item) {
   if (array == NULL) return 0;
   const int index = indexOfPollfd(array, item);
-  if (index == -1) return -1;
+  if (index == -1) return 0;
   const int length = array->length;
+  const int fields = array->fields;
   struct pollfd* start = array->start;
-  struct pollfd* pointer = malloc(sizeof(struct pollfd) * (length - 1));
-  if (pointer == NULL) return -1;
-  memcpy(pointer, start, index * sizeof(struct pollfd*));
-  memcpy(pointer + index, start + index + 1, (length - index - 1) * sizeof(struct pollfd*));
-  free(start);
-  array->start = pointer;
-  array->length -= 1;
+  if (fields - length >= ARRAY_FIELDS) {
+    const int newFields = fields - ARRAY_FIELDS;
+    struct pollfd* pointer = malloc(sizeof(struct pollfd) * newFields);
+    if (pointer == NULL) return 0;
+    memcpy(pointer, start, index * sizeof(struct pollfd));
+    memcpy(pointer + index, start + index + 1, (length - index - 1) * sizeof(struct pollfd));
+    free(start);
+    array->start = pointer;
+    array->length--;
+    array->fields = newFields;
+    return 1;
+  }
+  memmove(start + index, start + index + 1, (length - index - 1) * sizeof(struct pollfd));
+  array->length--;
   return 1;
 }
 

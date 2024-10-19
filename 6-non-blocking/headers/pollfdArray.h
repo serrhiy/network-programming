@@ -2,6 +2,7 @@
 
 typedef struct {
   int length;
+  int fields;
   struct pollfd* start;
 } pollfdArray;
 

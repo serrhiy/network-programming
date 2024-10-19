@@ -51,7 +51,7 @@ int getServerSocket(const struct addrinfo* info) {
 char* prepareAnswer(char* message, int msgLength, char* host, in_port_t port, int* length) {
   const int portLength = floor(log10(port)) + 1;
   const int hostLength = strlen(host);
-  const int totalLength = msgLength + portLength + hostLength + 3;
+  const int totalLength = msgLength + portLength + hostLength + 4;
   char* result = malloc(totalLength);
   sprintf(result, "%s:%d : %s", host, port, message);
   *length = totalLength;
