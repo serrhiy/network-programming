@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <arpa/inet.h>\
+#include <arpa/inet.h>
 
 #define MAX_MESSAGE_SIZE 8192
 
